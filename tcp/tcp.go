@@ -3,11 +3,13 @@ package tcp
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httputil"
 	"strings"
+	"time"
 )
 
 func Server() {
@@ -22,24 +24,37 @@ func Server() {
 			panic(err)
 		}
 		go func() {
+			defer conn.Close()
 			fmt.Printf("Accept %v\n", conn.RemoteAddr())
-			req, err := http.ReadRequest(bufio.NewReader((conn)))
-			if err != nil {
-				panic(err)
+			for {
+				conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+				req, err := http.ReadRequest(bufio.NewReader((conn)))
+				if err != nil {
+					neterr, ok := err.(net.Error)
+					if ok && neterr.Timeout() {
+						fmt.Println("Timeout")
+						break
+					} else if err == io.EOF {
+						break
+					}
+					panic(err)
+				}
+
+				dump, err := httputil.DumpRequest(req, true)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println(string(dump))
+				content := "Hello World"
+				res := http.Response{
+					StatusCode:    200,
+					ProtoMajor:    1,
+					ProtoMinor:    1,
+					ContentLength: int64(len(content)),
+					Body:          ioutil.NopCloser(strings.NewReader(content)),
+				}
+				res.Write(conn)
 			}
-			dump, err := httputil.DumpRequest(req, true)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println(string(dump))
-			res := http.Response{
-				StatusCode: 200,
-				ProtoMajor: 1,
-				ProtoMinor: 0,
-				Body:       ioutil.NopCloser(strings.NewReader("Hello World")),
-			}
-			res.Write(conn)
-			conn.Close()
 		}()
 	}
 }

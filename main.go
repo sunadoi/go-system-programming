@@ -3,5 +3,6 @@ package main
 import "root/tcp"
 
 func main() {
-	tcp.Tcp()
+	tcp.Server()
+	// tcp.Client()
 }

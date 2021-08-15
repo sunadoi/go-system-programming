@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func Tcp() {
+func Server() {
 	listener, err := net.Listen("tcp", "localhost:8888")
 	if err != nil {
 		panic(err)
@@ -42,4 +42,25 @@ func Tcp() {
 			conn.Close()
 		}()
 	}
+}
+
+func Client() {
+	conn, err := net.Dial("tcp", "localhost:8888")
+	if err != nil {
+		panic(err)
+	}
+	req, err := http.NewRequest("GET", "http://localhost:8888", nil)
+	if err != nil {
+		panic(err)
+	}
+	req.Write(conn)
+	res, err := http.ReadResponse(bufio.NewReader(conn), req)
+	if err != nil {
+		panic(err)
+	}
+	dump, err := httputil.DumpResponse(res, true)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(dump))
 }

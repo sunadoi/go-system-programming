@@ -1,8 +1,11 @@
 package main
 
-import "root/tcp"
+import (
+	"root/process"
+)
 
 func main() {
 	// tcp.Server()
-	tcp.Client()
+	// tcp.Client()
+	process.Process()
 }

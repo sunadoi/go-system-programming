@@ -1,11 +1,12 @@
 package main
 
 import (
-	"root/process"
+	"root/goroutine"
 )
 
 func main() {
 	// tcp.Server()
 	// tcp.Client()
-	process.Process()
+	// process.Process()
+	goroutine.Goroutine()
 }
